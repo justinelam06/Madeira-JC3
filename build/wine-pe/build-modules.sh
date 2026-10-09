@@ -14,6 +14,15 @@
 #   msvcr110, msvcp110, d3dx11_43  Metro 2033 Redux stopped at load with
 #                                  c0000135 without them (its PhysX and game
 #                                  modules import them)
+#   msvcr100, msvcp100             Just Cause 3 stopped at load with c0000135
+#                                  (JustCause3.exe, fmod_studio_F.dll and its
+#                                  jc3AudioDSP modules import them)
+#   msvcr80, msvcp80, msvcr90,     the rest of the VC++ 2005-2013 runtimes a
+#   msvcp90, msvcp120              64-bit game imports from system32, so the
+#                                  next game on one of them does not stop the
+#                                  same way (msvcr120 was already shipped;
+#                                  tests/host/check-runtime-farm.py keeps the
+#                                  set whole)
 #   cryptsp                        Xal.Unity (Ori and the Will of the Wisps)
 #                                  delay-loads SystemFunction032 from it
 #   xaudio2_7                      the prefix registers CLSID_XAudio2 (2.7) at
@@ -40,7 +49,8 @@ STRIP="$TC/arm64ec-w64-mingw32-strip"
 case "${1:-}" in
     -h|--help) sed -n '2,/^set -eu/p' "${BASH_SOURCE[0]}" | sed '$d; s/^# \{0,1\}//'; exit 0 ;;
 esac
-[ $# -gt 0 ] || set -- cryptsp d3dx11_43 msvcp110 msvcr110 xaudio2_7
+[ $# -gt 0 ] || set -- cryptsp d3dx11_43 msvcp80 msvcp90 msvcp100 msvcp110 msvcp120 \
+                       msvcr80 msvcr90 msvcr100 msvcr110 xaudio2_7
 [ -x "$STRIP" ] || { echo "llvm-mingw not found at $TC (docs/BUILDING.md)" >&2; exit 1; }
 
 targets=()
