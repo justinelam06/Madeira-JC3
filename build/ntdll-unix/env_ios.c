@@ -504,7 +504,20 @@ static void set_process_name( const char *name )
 #endif
     if ((p = strrchr( name, '\\' ))) name = p + 1;
     if ((p = strrchr( name, '/' ))) name = p + 1;
-#ifdef HAVE_SETPROGNAME
+    /* iOS: never setprogname. Wine runs inside the app, so this renamed the app
+     * itself, and setprogname keeps the pointer it is given rather than a copy.
+     * Here that pointer is into exe_path, a local of the launch thread in
+     * WineProcessBridge.m (main_argv is that thread's argv), which is unmapped
+     * when the session ends. The next getprogname() anywhere in the app then
+     * reads freed stack.
+     *
+     * Just Cause 3, 2026-10-09: the game ended with c0000135, the app went back
+     * to the library, and 8 s later the main thread crashed in _platform_strlen
+     * <- strdup <- xpc_dictionary_set_string <- nwi_state_copy (UIKit ->
+     * AssistantServices), on 0x16b99268b: "JustCause3.exe" inside the dead
+     * thread's exe_path, just below its TSD base 0x16b9930e0.
+     * tests/host/check-progname.py */
+#if defined(HAVE_SETPROGNAME) && !defined(WINE_IOS)
     setprogname( name );
 #endif
 #ifdef HAVE_PRCTL
